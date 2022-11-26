@@ -37,9 +37,11 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.daiv.util:kutil:0.4.7")
-                implementation("org.daiv.websocket:eventbus:0.6.3")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.1")
+                implementation("org.daiv.util:kutil:0.5.1")
+                implementation("org.daiv.websocket:eventbus:0.7.1")
+                implementation("org.daiv.coroutines:coroutines-lib:0.2.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
             }
         }
         val commonTest by getting {
@@ -48,10 +50,10 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val versionsktor = "1.6.5"
+        val versionsktor = "2.1.3"
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-websockets:${versionsktor}")
+                implementation("io.ktor:ktor-server-websockets:${versionsktor}")
                 implementation("io.ktor:ktor-server-netty:${versionsktor}")
             }
         }
@@ -69,4 +71,37 @@ kotlin {
 //        val nativeMain by getting
 //        val nativeTest by getting
     }
+    val assembleWeb = tasks.register("assembleWeb"){
+        doLast {
+            val name = "websocket-eventbus-example"
+            val distributions = "distributions"
+            val jsFolder = "js"
+            val dist = "${project.buildDir}/$distributions"
+            val fjs = File("$dist/$name.js")
+            val fjsMap = File("${project.buildDir}/$distributions/$name.js.map")
+            File("${project.buildDir}/$distributions/$jsFolder/").mkdirs()
+            val rename = "${project.buildDir}/$distributions/$jsFolder/$name.js"
+            fjs.renameTo(File(rename))
+            fjsMap.renameTo(File("${project.buildDir}/$distributions/$jsFolder/$name.js.map"))
+        }
+//    from("${project.buildDir}/distributions/frontend.js")
+//    from("${project.buildDir}/distributions/frontend.js")
+//    into("${project.buildDir}/distributions/js/")
+    }
+
+//tasks.getByName("jsBrowserDevelopmentWebpack"){
+//    dependsOn(assembleWeb)
+//}
+    tasks.getByName("assembleWeb"){
+        dependsOn(tasks.getByName("jsBrowserProductionWebpack"))
+    }
+
+    tasks.getByName<Jar>("jvmJar"){
+        dependsOn(assembleWeb)
+        dependsOn(tasks.getByName("jsBrowserProductionWebpack"))
+        val jsBrowserProductionWebpack = tasks.getByName<org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack>("jsBrowserProductionWebpack")
+        from(File(jsBrowserProductionWebpack.destinationDirectory, jsBrowserProductionWebpack.outputFileName))
+        from(File(jsBrowserProductionWebpack.destinationDirectory, "${jsBrowserProductionWebpack.outputFileName}.map"))
+    }
+
 }

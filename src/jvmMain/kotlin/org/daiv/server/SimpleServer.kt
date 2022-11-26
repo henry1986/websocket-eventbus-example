@@ -1,16 +1,14 @@
 package org.daiv.server
 
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.http.cio.websocket.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
-import io.ktor.websocket.*
+import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
 import mu.KotlinLogging
 import org.daiv.websocket.*
 import org.daiv.websocket.mh2.*
-import org.slf4j.event.Level
 import java.time.Duration
 
 
@@ -21,10 +19,7 @@ class SimpleServer {
 
     fun start() {
         val s = embeddedServer(Netty, port = 8080) {
-            install(CallLogging) {
-                level = Level.DEBUG
-            }
-            install(WebSockets) {
+            install(WebSockets){
                 pingPeriod = Duration.ofMinutes(1)
             }
             routing {
@@ -35,6 +30,7 @@ class SimpleServer {
                             SendData.serializer(),
                             ReceiveData.serializer()
                         ) { h, d ->
+                            println("received from frontend: $d")
                             Message(h, ReceiveData(d.string + d.i))
                         }, DMHRequestResponse(
                             BSDFrontendHeader.serializer(),
@@ -63,10 +59,19 @@ class SimpleServer {
 
                     // variable used to send something
                     val sender = DMHSender(z)
-
+                    sender.send(BSDFrontendHeader.serializer(),SendData3.serializer(), BSDFrontendHeader(), SendData3("Hello World", 55))
                     z.listen()
+
+                }
+                static {
+                    files("build/distributions")
                 }
             }
         }
+        s.start(true)
     }
+}
+
+fun main() {
+    SimpleServer().start()
 }
