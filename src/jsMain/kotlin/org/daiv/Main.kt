@@ -1,9 +1,6 @@
 package org.daiv
 
-import org.daiv.websocket.BSDFrontendHeader
-import org.daiv.websocket.ReceiveData
-import org.daiv.websocket.SendData
-import org.daiv.websocket.SendData3
+import org.daiv.websocket.*
 import org.daiv.websocket.mh2.*
 
 fun main() {
@@ -11,9 +8,14 @@ fun main() {
         WebsocketBuilder(
             JSSendable(),
             messageFactory = DMHMessageFactory,
-            requestHandler = listOf(DMHRequestHandler(BSDFrontendHeader.serializer(), SendData3.serializer()) { h, r ->
-                println("received: $r")
-            })
+            requestHandler = listOf(
+                DMHRequestHandler(BSDFrontendHeader.serializer(), SendData4.serializer()) { h, r ->
+                    println("received4: $r")
+                },
+                DMHWebsocketRequestHandler(BSDFrontendHeader.serializer(), SendData3.serializer()) { ws, h, r ->
+                    println("received: $r")
+                },
+            )
         )
     ) {
         val sender = DMHSender(it)

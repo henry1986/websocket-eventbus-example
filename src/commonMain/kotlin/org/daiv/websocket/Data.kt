@@ -19,3 +19,6 @@ data class ReceiveData2(val answer:String)
 
 @Serializable
 data class SendData3(val string:String, val i:Int)
+
+@Serializable
+data class SendData4(val string:String, val i:Int)

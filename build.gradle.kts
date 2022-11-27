@@ -38,7 +38,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.daiv.util:kutil:0.5.1")
-                implementation("org.daiv.websocket:eventbus:0.7.1")
+                implementation("org.daiv.websocket:eventbus:0.7.2")
                 implementation("org.daiv.coroutines:coroutines-lib:0.2.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")

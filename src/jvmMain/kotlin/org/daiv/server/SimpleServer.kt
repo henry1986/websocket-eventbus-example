@@ -17,6 +17,8 @@ class SimpleServer {
         private val logger = KotlinLogging.logger { }
     }
 
+    val list = mutableMapOf<String, DMHSender<DMHKtorWebsocketHandler>>()
+
     fun start() {
         val s = embeddedServer(Netty, port = 8080) {
             install(WebSockets){
@@ -59,9 +61,10 @@ class SimpleServer {
 
                     // variable used to send something
                     val sender = DMHSender(z)
+                    sender.send(BSDFrontendHeader.serializer(),SendData4.serializer(), BSDFrontendHeader(), SendData4("with Websocket", 56))
                     sender.send(BSDFrontendHeader.serializer(),SendData3.serializer(), BSDFrontendHeader(), SendData3("Hello World", 55))
+                    println("sent")
                     z.listen()
-
                 }
                 static {
                     files("build/distributions")
@@ -69,6 +72,10 @@ class SimpleServer {
             }
         }
         s.start(true)
+    }
+
+    suspend fun broadcast(key:String){
+        list[key]?.send(BSDFrontendHeader.serializer(),SendData3.serializer(), BSDFrontendHeader(), SendData3("Hello World", 55))
     }
 }
 
